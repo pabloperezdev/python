@@ -1,6 +1,26 @@
 
 
-from flask import Flask
+from flask import Flask, current_app
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
+import click
+import os
+
+
+class Base(DeclarativeBase):
+  pass
+
+
+db = SQLAlchemy(model_class=Base)
+
+
+@click.command('init-db')
+def init_db_command():
+    """Clear the existing data and create new tables."""
+    global db
+    with current_app.app_context():
+        db.create_all()
+    click.echo('Initialized the database.')
 
 
 def create_app(test_config=None):
@@ -8,7 +28,7 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE= 'diobank.sqlite',
+        SQLALCHEMY_DATABASE_URI="sqlite:///diobank.sqlite",
     )
 
     if test_config is None:
@@ -18,8 +38,13 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
+    try:
+        os.mkdir(app.instance_path)
+    except OSError:
+        pass   
 
-from . import db
-db.init_app(app)
+    app.cli.add_command(init_db_command)
 
-return app
+    db.init_app(app)
+
+    return app
