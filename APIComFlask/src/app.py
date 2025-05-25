@@ -1,3 +1,8 @@
+# Esse código é o começo de uma aplicação web com:
+# Cadastro de usuários
+# Cadastro de postagens
+# Uso de banco de dados SQLite
+# Um comando para preparar tudo no terminal
 
 from flask import Flask, current_app
 from flask_sqlalchemy import SQLAlchemy
@@ -17,7 +22,6 @@ db = SQLAlchemy(model_class=Base)
 class User(db.Model):
     id: Mapped[int] = mapped_column(sa.Integer, primary_key=True)
     username: Mapped[str] = mapped_column(sa.String, unique=True)
-    #email: Mapped[str] = mapped_column(sa.String)
 
     def __repr__(self):
         return f"User(id={self.id!r}, username={self.username!r})"
@@ -34,7 +38,7 @@ class Post(db.Model):
     author_id: Mapped[int] = mapped_column(
         sa.ForeignKey('user.id')
     )
-    
+
     def __repr__(self):
         return (
             f"Post(id={self.id!r}, title={self.title!r}, "
@@ -69,7 +73,7 @@ def create_app(test_config=None):
     try:
         os.mkdir(app.instance_path)
     except OSError:
-        pass   
+        pass
 
     app.cli.add_command(init_db_command)
 
